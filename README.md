@@ -1,6 +1,6 @@
 ## Brief Showcase of Data Projects 
 
-_1) Data Wrangling / Munging
+_1) Data Wrangling / Munging_
 
 * ([go here](https://github.com/tk563/MyProjects/blob/master/EDA.ipynb))
 Online course website data -- Exploratory Data Analysis via Python_
