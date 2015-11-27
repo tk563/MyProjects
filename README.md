@@ -15,9 +15,3 @@ _2) Statistical Learning_
 Baseball players' salaries based on continuous/ categorical covariates -- Multiple Linear Regression via R
 
 
-
-
-_3) Visualiztion_
-
-* ([go here](https://public.tableau.com/profile/tk563/))
-City building permits by type, location, date, etc -- Interactive Dashboard via Tableau
