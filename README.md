@@ -2,7 +2,7 @@
 
 _1) Data Munging_
 
-* ([go here](https://github.com/tk563/MyProjects/blob/master/schoolfunding.sql))
+* ([go here](https://github.com/tk563/MyProjects/blob/master/funding.sql))
 US public school funding -- Data Wrangling via SQL
 
 * ([go here](https://github.com/tk563/MyProjects/blob/master/EDA.ipynb))
@@ -11,7 +11,7 @@ Online course website data -- Exploratory Data Analysis via Python
 
 _2) Statistical Learning_ 
 
-* ([go here](https://github.com/tk563/MyProjects/blob/master/baseball2.pdf))
+* ([go here](https://github.com/tk563/MyProjects/blob/master/baseball.pdf))
 Baseball players' salaries based on continuous/ categorical covariates -- Multiple Linear Regression via R
 
 
