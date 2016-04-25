@@ -18,4 +18,4 @@ Baseball players' salaries based on continuous/ categorical covariates -- Multip
 _2) Visualization_ 
 
 * ([go here](https://public.tableau.com/profile/t.michael.kim#!/))
-Internet User Growth by Region, Country, Year, and/or Mobile Subscription  -- Data Visualization via Tableau
+Internet User Growth -- Data Visualization via Tableau
