@@ -15,7 +15,7 @@ _2) Statistical Learning_
 Baseball players' salaries based on continuous/ categorical covariates -- Multiple Linear Regression via R
 
 
-_2) Visualization_ 
+_3) Visualization_ 
 
 * ([go here](https://public.tableau.com/profile/t.michael.kim#!/))
 Internet User Growth -- Data Visualization via Tableau
