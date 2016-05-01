@@ -3,7 +3,7 @@
 _1) Data Munging_
 
 * ([go here](https://github.com/tk563/MyProjects/blob/master/funding.sql))
-Online subscription, company and school funding -- Data Wrangling via SQL
+Subscription services, company and school funding -- Data Wrangling via SQL
 
 * ([go here](https://github.com/tk563/MyProjects/blob/master/EDA.ipynb))
 Online course website data -- Exploratory Data Analysis via Python
