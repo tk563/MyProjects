@@ -1,16 +1,45 @@
-#### 1) US Start-ups (MySQL) #####
+#################### 1) Subscription #########################
+
+select year(a.payment_date) || '-' || month(a.payment_date) as yr_mo, sum(a.payment_amount)
+from payments as a inner join subscriptions as b
+on a.subscription_id=b.subscription_id
+where b.subscription_typ = 2
+group by yr_mo;
+
+select a.student_id, a.username, count(b.practice_date) as daycount
+from students a inner join student_practice_days b
+on a.student_id=b.student_id
+where a.subscription_id = 12345 and month(b.practice_date) = (select max(month(b.practice_date)) from student_practice_days) 
+group by a.student_id, a.username
+order by daycount desc limit 10; 
+
+create table students2 as
+select a.*, b.practice_date
+from students a, 
+(
+	select 
+	student_id, 
+	count(distinct practice_date) as uniq_days,
+	case when uniq_days >= 30 then 1 else 0 end as keep_indicator
+	from student_practice_days
+	where practice_date between (select curdate() - interval 90 day as min_dt) and curdate()
+	group by student_id
+) b
+where a.student_id=b.student_id;
+
+select b.*, b.uniq_days/a.num_stuents_allowed as utilization
+from subscriptions a inner join students2 b
+on a.subscription_id=b.subscription_id
+where keep_indicator = 1;
+
+
+#################### 2) Company funding #########################
 
 # description
 show tables;
 select * from Crunchbase limit 15;
 select count(*) from Crunchbase;
 describe Crunchbase;
-
-# Cleveland, Ohio
-select count(distinct name), city
-from Crunchbase 
-where region = 'Cleveland'
-group by city;
 
 # Number of occurrences per market
 select market, count(name) as num_occur 
@@ -60,7 +89,7 @@ group by market
 order by tot_funding desc limit 10;
 
 
-#### 2) US Public Schools (Oracle Database XE 11g) ####
+#################### 3) School Funding #########################
 
 /* Highest federal revenue of each state with State Name listed */
 select stcode, to_char( max(c14+c15+c16+c17+c18+c19+b11+c20+c25+c36+b10+b12+b13), '999,999,999') as max_fed_rev,
@@ -68,7 +97,8 @@ select stcode, to_char( max(c14+c15+c16+c17+c18+c19+b11+c20+c25+c36+b10+b12+b13)
     from state_t s 
     where s.stcode=f.stcode) stname
 from Fedrev_t f
-group by stcode order by max_fed_rev desc;
+group by stcode 
+order by max_fed_rev desc;
 
 /* School District Name with Highest Fed Revenue */
 select stname, a.stcode, to_char( max_fed_rev, '999,999,999') as max_fed_rev, sd_name
@@ -78,7 +108,8 @@ from
       from state_t s 
       where s.stcode=f.stcode) stname
    from Fedrev_t f
-   group by stcode order by max_fed_rev desc) a,
+   group by stcode o
+   order by max_fed_rev desc) a,
   
   (select stcode, idcensus as fid, c14+c15+c16+c17+c18+c19+b11+c20+c25+c36+b10+b12+b13 as tfedrev 
    from fedrev_t) b,
