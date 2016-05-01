@@ -13,7 +13,7 @@ where a.subscription_id = 12345 and month(b.practice_date) = (select max(month(b
 group by a.student_id, a.username
 order by daycount desc limit 10; 
 
-create table students2 as
+create temporary table students2 as
 select a.*, b.practice_date
 from students a, 
 (
