@@ -1,42 +1,66 @@
-/* The code below was utilized to check again the cardinality of relationships between SCHOOL to FEDREV, STREV, LOCREV respectively.
-The result "no rows selected" implies that there are no instances of Idcensus that do not exist in both tables. */
-select * from fedrev_t where idcensus NOT IN (select idcensus from school_t);
-select * from strev_t where idcensus NOT IN (select idcensus from school_t);
-select * from locrev_t where idcensus NOT IN (select idcensus from school_t);
+#### 1) US Start-ups (MySQL) #####
 
-/* Find districts that received more than $1 Billion */
-select idcensus, stcode, c14+c15+c16+c17+c18+c19+b11+c20+c25+c36+b10+b12+b13 as tfedrev
-from Fedrev_t
-where c14+c15+c16+c17+c18+c19+b11+c20+c25+c36+b10+b12+b13 > 1000000;
+# description
+show tables;
+select * from Crunchbase limit 15;
+select count(*) from Crunchbase;
+describe Crunchbase;
 
-select idcensus, stcode, c01+c04+c05+c06+c07+c08+c09+c10+c11+c12+c13+c24+c35+c38+c39 as tstrev
-from Strev_t
-where c01+c04+c05+c06+c07+c08+c09+c10+c11+c12+c13+c24+c35+c38+c39 > 1000000;
+# Cleveland, Ohio
+select count(distinct name), city
+from Crunchbase 
+where region = 'Cleveland'
+group by city;
 
-select idcensus, stcode, t02+t06+t09+t15+t40+t99+d11+d23+a07+a08+a09+a11+a13+a15+a20+a40+u11+u22+u30+u50+u97 as tlocrev
-from Locrev_t
-where t02+t06+t09+t15+t40+t99+d11+d23+a07+a08+a09+a11+a13+a15+a20+a40+u11+u22+u30+u50+u97 > 1000000;
+# Number of occurrences per market
+select market, count(name) as num_occur 
+from Crunchbase
+where market <> ''
+group by market
+order by num_occur desc limit 25;
 
-/* State with the highest number of school districts */
-select *
-from 
-  (select stcode, to_char( count(stcode), '999,999') as count
-  from Fedrev_t
-  group by stcode order by count desc)
-where rownum=1;
+# top 25~50 highest funded w/ status oeprating/acquired 
+# temporary table gets deleted when the current client session terminates.
+set @rank = 0;
 
-/* Highest federal, state, and local revenues for each state */
-select stcode, to_char( max(c14+c15+c16+c17+c18+c19+b11+c20+c25+c36+b10+b12+b13), '999,999,999') as max_fed_rev
-from Fedrev_t
-group by stcode order by stcode;
+create temporary table top_funded as 
+(
+select name, funding_total_usd, @rank:=@rank+1 as row_num
+from Crunchbase
+where status in ('acquired','operating')
+order by funding_total_usd desc
+);
 
-select stcode, to_char( max(c01+c04+c05+c06+c07+c08+c09+c10+c11+c12+c13+c24+c35+c38+c39), '999,999,999') as max_st_rev
-from Strev_t
-group by stcode order by stcode;
+select * from top_funded limit 5;
+select * from Crunchbase order by funding_total_usd desc;
+select * from Crunchbase where name in ('Verizon Communicatins', 'Clearwire', 'Charter Communications');
 
-select stcode, to_char( max(t02+t06+t09+t15+t40+t99+d11+d23+a07+a08+a09+a11+a13+a15+a20+a40+u11+u22+u30+u50+u97), '999,999,999') as max_loc_rev
-from locrev_t
-group by stcode order by stcode;
+select * 
+from top_funded
+where row_num between 25 and 50;
+
+# 10 oldest, currently operating
+select name, founded_year
+from Crunchbase
+where status = 'operating' and founded_year < 2000 and founded_year <> ''
+order by founded_year limit 10;
+
+# Top 25 markets in CA and NY, operating
+select market, sum(funding_total_usd) as total_funding
+from Crunchbase
+where state_code in ('NY','CA') and status = 'operating' and market <> ''
+group by market 
+order by total_funding desc limit 25;
+
+# Top 10 markets by funding, number of start-ups per market
+select market, count(distinct name), funding_total_usd as tot_funding
+from Crunchbase
+where founded_year between 2010 and 2014
+group by market
+order by tot_funding desc limit 10;
+
+
+#### 2) US Public Schools (Oracle Database XE 11g) ####
 
 /* Highest federal revenue of each state with State Name listed */
 select stcode, to_char( max(c14+c15+c16+c17+c18+c19+b11+c20+c25+c36+b10+b12+b13), '999,999,999') as max_fed_rev,
@@ -63,46 +87,3 @@ from
    
 where a.max_fed_rev=b.tfedrev and fid=c.idcensus
 order by max_fed_rev desc;
-
-/* Create a View from three tables */
-create view Total_Rev_v as
-select f.idcensus, f.stcode, 
-       c14+c15+c16+c17+c18+c19+b11+c20+c25+c36+b10+b12+b13 as tfedrev,
-       c01+c04+c05+c06+c07+c08+c09+c10+c11+c12+c13+c24+c35+c38+c39 as tstrev,
-       t02+t06+t09+t15+t40+t99+d11+d23+a07+a08+a09+a11+a13+a15+a20+a40+u11+u22+u30+u50+u97 as tlocrev
-from fedrev_t f,strev_t s, locrev_t l
-where f.idcensus=s.idcensus and f.idcensus=l.idcensus and s.idcensus=l.idcensus;
-
-/* Top 5 states with highest revenues per Federal, State, and Local */
-select stname, to_char( fed_rev_total, '999,999,999') as fed_rev_total
-from state_t stName,
-    (select stcode, sum(tfedrev) as fed_rev_total 
-     from total_rev_v 
-     group by stcode order by fed_rev_total desc) tView
-where tView.stcode=stName.stcode and rownum<=5;
-
-select stname, to_char( st_rev_total, '999,999,999') as st_rev_total
-from state_t stName,
-    (select stcode, sum(tstrev) as st_rev_total 
-     from total_rev_v 
-     group by stcode order by st_rev_total desc) tView
-where tView.stcode=stName.stcode and rownum<=5;
-
-select stname, to_char( loc_rev_total, '999,999,999') as loc_rev_total
-from state_t stName,
-    (select stcode, sum(tlocrev) as loc_rev_total 
-     from total_rev_v 
-     group by stcode order by loc_rev_total desc) tView
-where tView.stcode=stName.stcode and rownum<=5;
-
-/* Total Revenue in descending order with each school district name included */
-select *
-from
-(select tView.stcode, stname, sd_name, to_char( Total_revenue, '999,999,999') as Total_revenue
-from state_t stName, 
-     (select idcensus, stcode, tfedrev+tstrev+tlocrev as Total_revenue
-      from total_rev_v) tView, 
-     school_t sd
-where stName.stcode=tView.stcode and tView.idcensus=sd.idcensus
-order by Total_revenue desc)
-where rownum<=100;
